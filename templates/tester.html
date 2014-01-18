@@ -1,0 +1,69 @@
+<!doctype html>
+<html> <head> <title> Regex Tester </title>
+
+<style>
+ 
+    .success { background-color: #7FFF00; }
+    .failed { background-color: #CC0000; }
+	.match_text {
+ 	   /*overflow-y:scroll;*/
+	  /* width: 50px;*/
+	}
+	#regex,#match {
+		overflow-y:scroll;
+		width: 500pt;
+
+	}
+}	
+
+</style>
+
+<script src="static/regex_tester.js"></script>
+
+</head>
+
+<body> <H2> Regex Tester </H2>
+
+<!-- regex input -->
+<div>
+<h3>Regex</h3> <input type = "text"
+id = "regex" /> <button id = "submit_regex" > Submit </button>
+</div >
+
+
+<!-- match input -->
+
+<div>
+<p>
+<input type="text" id="match"/ > <a href = "#"
+id = "export" > Export </a> </p> <p>
+<button id="positive">Add positive match</button > <button id = "negative" > Add negative match </button>
+</p >
+ </div>
+
+
+<!-- match table -->
+<div>
+ <table border = 1 id = "match_table_top"
+align = "center" > <tr> 
+<th class = "col1" > Ops </th>	
+    <th class="col2">Type</th >
+     <th class="col3">Result</th >
+     <th class = "col4" > Text </th>
+    <th class="col5">Match(es)</th >
+
+    </tr >
+
+<tbody id = "match_table" > </tbody>
+</table >
+</div>
+
+<!-- import json file -->
+
+<div> <p><h3> Import </h3>
+<input type="file" id="fiels" name="files" multiple />
+ <input type="submit" value="Submit" id="btn"></p>
+</div>
+
+</body>
+</html >
