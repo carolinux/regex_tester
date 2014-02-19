@@ -1,0 +1,1 @@
+{"regex":"the end\\.","positive":["this is the end."],"negative":["this is the end!","is this the end?","this is the end"]}

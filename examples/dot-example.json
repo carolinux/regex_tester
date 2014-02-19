@@ -1,0 +1,1 @@
+{"regex":"foo.","positive":["foobar","foot","food"],"negative":["foo","barfoo"]}
