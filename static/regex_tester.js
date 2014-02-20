@@ -1,17 +1,33 @@
 //^(?!.*((....) \2)|(..)11 \3[1]0|(.)011 \4[1]0).*$
 //still TODO
-// somehow show inbisibul characters
-// show multipul matches bettur
+
 // css-ify it
-// remove onclick in html code snippet for moar unobtrusive javaskrupt
+// remove leftover onclicks in html code snippet for moar unobtrusive javaskrupt
 // initialize closure with giving the relevant ids as strings
 // add comments to regex match
-// add regex options
-// when flipping fix bug that keeps match -- I think it's fixed?
+// add regex options (case isnenstive, multilene, dot match all etc)
+
+
+
+
+//Could use MOAR work
+
+// somehow show inbisibul characters -- added a pipe symbol for zero matches, still
+//should add some colors and stuff and show spaces as something (underscore is a temp fix)
+// show multipul matches bettur
+
+// serious problem with export, why doesnt it export plus sign?? 
+//fixed for now-- made it encode it properly, more problems may follow with urlencoding though) 
+// is it possible to upload without urlencoding?
+
 // prevent adding the empty string -- what's the best way UI-wise ?
-// serious problem with zero width matches, fix 
+
+
 
 //DONE
+
+// when flipping fix bug that keeps match -- I think it's fixed?
+// serious problem with zero width matches, fix 
 //also code duplication fix in finding matches
 // add as you tyep validation
 // add clear all button
@@ -58,6 +74,7 @@ var _regexTester = (function(document) {
 
     }
 
+
     var process_text = function(str) {
       return display_spaces(escape_html(str));
     }
@@ -69,7 +86,7 @@ var _regexTester = (function(document) {
 
     var display_spaces = function(str) {
 
-      return str;
+      return str.replace(/\s/g, '_');
     }
 
     var get_all_matches = function() {
@@ -94,28 +111,29 @@ var _regexTester = (function(document) {
 
     var find_match = function(re,val) {
 
-    	 var prev = 0;
-        //alert(matches[i].value);
-       // matches[i].className = "positive_match";
         var ms = 0;
+        var prev=0;
         var text = ""
-        indices = new Array();
+        var first = true;
         do {
+          console.log("last indexL?"+re.lastIndex);
           var m = re.exec(val);
+          console.log(m);
 
           if (m) {
            
-             if(indices.length>=1 && m.index == indices[indices.length-1]) {
+             if(re.lastIndex == m.index && first!=true) {
 
-            	console.log("regex problem? matching same character index twice.")
+             	first=true;
+             	// weirdness
+             	// http://www.regexguru.com/2008/04/watch-out-for-zero-length-matches/
+            	
             	console.log("Zero width match? width of match="+m[0].length)
                 console.log("last index:"+re.lastIndex);
-              // better get out
-              // why does it loop? (better check: 
-              //	if m.index is equal to previous one, we achieved nothing)
-              break;
+                re.lastIndex=re.lastIndex+1
+              	continue;
             }
-             indices.push(m.index);
+            first=false;
             console.log(m[0]);
             ms++;
             console.log("match for:"+val+"found at index:"+m.index);
@@ -126,7 +144,7 @@ var _regexTester = (function(document) {
              	text+=process_text(val.substring(prev, m.index))+"|";
             console.log(m.index);
            
-            prev = m.index + m[0].length;
+            prev = re.lastIndex;
           }
         } while (m);
         text += process_text(val.substring(prev, val.length));
@@ -209,17 +227,15 @@ var _regexTester = (function(document) {
        check_regex();
     }, false);
 
-
-
-
-
   }
 
   var add_match = function(klass) {
 
-    //TODO: change color with respect to match type
-
     var match_text = escape_html(document.getElementById("match").value);
+    if (match_text.trim()=="") {
+    	console.log("Empty space :(")
+    	return;
+    }
     var type = "Match";
     var opposite = "negative";
     if (klass == "negative") {
@@ -233,44 +249,7 @@ var _regexTester = (function(document) {
     
   };
 
-var click_link = function(link)
-{
-   var allowDefaultAction = true;
-      
-   if (link.click)
-   {
-      link.click();
-      return;
-   }
-   else if (document.createEvent)
-   {
-      var e = document.createEvent('MouseEvents');
-      e.initEvent(
-         'click'     // event type
-         ,true      // can bubble?
-         ,true      // cancelable?
-      );
-      allowDefaultAction = link.dispatchEvent(e);           
-   }
-         
-   if (allowDefaultAction)       
-   {
-      var f = document.createElement('form');
-      f.action = link.href;
-      document.body.appendChild(f);
-      f.submit();
-   }
-}
 
-var http_get = function(theUrl)
-{
-    var xmlHttp = null;
-
-    xmlHttp = new XMLHttpRequest();
-    xmlHttp.open( "GET", theUrl, false );
-    xmlHttp.send( null );
-    return xmlHttp.responseText;
-}
 
  var import_config = function() {
 
@@ -329,14 +308,14 @@ var http_get = function(theUrl)
 
     var json;
     var data = {};
-    data["regex"] = document.getElementById("regex").value; 
+    data["regex"] = document.getElementById("regex").value.replace(/\+/g, '%2B'); 
     data["positive"] = new Array();
     data["negative"] = new Array();
     var m = document.getElementsByClassName("positive_match");
     for (var i = 0; i < m.length; i++) {
 
       text = m[i].getElementsByClassName("match_text")[0].firstChild.nodeValue;
-      data.positive.push(text);
+      data.positive.push(text.replace(/\+/g, '%2B'));
 
 
     }
@@ -345,57 +324,18 @@ var http_get = function(theUrl)
     for (var i = 0; i < m.length; i++) {
 
       text = m[i].getElementsByClassName("match_text")[0].firstChild.nodeValue;
-      data.negative.push(text);
+      data.negative.push(text.replace(/\+/g, '%2B'));
 
 
     }
 
-    var json = JSON.stringify(data);
-
+    var json =JSON.stringify(data);
     console.log(json);
-
-     var url = "/export?json="+json
-
-   // var link = document.createElement('a');
-	//link.href = url;
-	//document.body.appendChild(link);
-	//click_link(link); 
+    var url = "/export?json="+json
 	window.open(url);
-	//newwin.close();
+
 
   };
-
-var upload = function() {
-
- var client = new XMLHttpRequest();
-
-      var file = document.getElementById("upload_file");
-       console.log("fiel:"+file);
-     
-      /* Create a FormData instance */
-      var formData = new FormData();
-      /* Add the file */ 
-      formData.append("file", file.files[0]);
-
-      client.open("post", "/import", true);
-      client.setRequestHeader("Content-Type", "multipart/form-data");
-	
-      client.send(formData);  /* Send to server */ 
- 
-     
-   /* Check the response status */  
-   client.onreadystatechange = function() 
-   {
-      if (client.readyState == 4 && client.status == 200) 
-      {
-         alert(client.statusText);
-      }
-   }
-
-}
-
-
-  //document.getElementsByClassName("positive_match")[0].getElementsByClassName("match_text")
 
   return {
     add_handlers: function() {
