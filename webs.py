@@ -2,6 +2,7 @@ from flask import Flask
 from flask import render_template
 from flask import request
 from flask import make_response
+import sys
 
 app = Flask(__name__)
 
@@ -21,5 +22,10 @@ def upload_file():
 
 
 if __name__ == "__main__":
+	
+    if(sys.argv[1]=='-d'):
+	debug=True
+    else:
+	debug=False
    
-    app.run()# call with arg debug=True for debugging
+    app.run(debug=debug)# call with arg debug=True for debugging

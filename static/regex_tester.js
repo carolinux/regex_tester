@@ -1,21 +1,28 @@
 //^(?!.*((....) \2)|(..)11 \3[1]0|(.)011 \4[1]0).*$
-
-// MAKE IT BIGGUR for biggur texts as an opshun -DONE
-
-//Make nice tabul - DONE
-
-//Export <-done
-//load (maybe decode/encode base64 ?) - done
-// + validaet + populate from loaded json 
-// Flip match functionality wif buttn - DONE
+//still TODO
 // somehow show inbisibul characters
 // show multipul matches bettur
-// bigger text for inputs
 // css-ify it
-// fix bug on unmatched - DONE
 // remove onclick in html code snippet for moar unobtrusive javaskrupt
+// initialize closure with giving the relevant ids as strings
+// add comments to regex match
+// add regex options
+// when flipping fix bug that keeps match -- I think it's fixed?
+// prevent adding the empty string -- what's the best way UI-wise ?
+// serious problem with zero width matches, fix 
 
-
+//DONE
+//also code duplication fix in finding matches
+// add as you tyep validation
+// add clear all button
+// MAKE IT BIGGUR for biggur texts as an opshun -DONE
+//Make nice tabul - DONE
+//Export <-done
+//load (maybe decode/encode base64 ?) - done
+// + validaet + populate from loaded json -done
+// Flip match functionality wif buttn - DONE
+// bigger text for inputs -DONE
+// fix bug on unmatched - DONE
 //little x button to remoev - DONE (version bare bones)
 //CLEAR text as soon as you add regex - DONE
 //highlight matchuz - DONE 
@@ -65,22 +72,31 @@ var _regexTester = (function(document) {
       return str;
     }
 
-    var check_regex = function(e) {
+    var get_all_matches = function() {
 
-      var regex = document.getElementById("regex").value;
-      if(regex=="")
-      	return;
-      var matches = document.getElementsByClassName("positive_match");
-      console.log(matches);
-      var re = new RegExp(regex, 'g');
+    	var p = document.getElementsByClassName("positive_match");
+    	var n = document.getElementsByClassName("negative_match");
 
+		return [].slice.call(p).concat([].slice.call(n));
 
-      for (var i = 0; i < matches.length; i++) {
+		// concatenating nodelists is serious business
+		// http://stackoverflow.com/questions/2430121/javascript-concatenate-multiple-nodelists-together
 
-        var prev = 0;
+    }
+
+    var clear_all = function(){
+    	var matches = get_all_matches();
+    	 for (var i = 0; i < matches.length; i++) {
+    	 	matches[i].parentNode.removeChild(matches[i])
+    	 }
+
+    }
+
+    var find_match = function(re,val) {
+
+    	 var prev = 0;
         //alert(matches[i].value);
        // matches[i].className = "positive_match";
-        var val = matches[i].getElementsByClassName("match_text")[0].firstChild.nodeValue;
         var ms = 0;
         var text = ""
         indices = new Array();
@@ -88,60 +104,73 @@ var _regexTester = (function(document) {
           var m = re.exec(val);
 
           if (m) {
-            indices.push(m.index);
-            console.log(m[0]);
-            ms++;
-            //	console.log(m);
-            text += process_text(val.substring(prev, m.index)) + "<b>" + process_text(val.substring(m.index, m.index + m[0].length)) + "</b>";
-            console.log(m.index);
-            if(indices.length>=2 && m.index == indices[indices.length-2]) {
-            
+           
+             if(indices.length>=1 && m.index == indices[indices.length-1]) {
+
+            	console.log("regex problem? matching same character index twice.")
+            	console.log("Zero width match? width of match="+m[0].length)
+                console.log("last index:"+re.lastIndex);
               // better get out
-              // why does it loop? (better check: if m.index is equal to previous one, we achieved nothing)
+              // why does it loop? (better check: 
+              //	if m.index is equal to previous one, we achieved nothing)
               break;
             }
+             indices.push(m.index);
+            console.log(m[0]);
+            ms++;
+            console.log("match for:"+val+"found at index:"+m.index);
+            if (m[0].length>0)
+            text += process_text(val.substring(prev, m.index)) +
+             "<b>" + process_text(val.substring(m.index, m.index + m[0].length)) + "</b>";
+             else
+             	text+=process_text(val.substring(prev, m.index))+"|";
+            console.log(m.index);
+           
             prev = m.index + m[0].length;
           }
         } while (m);
         text += process_text(val.substring(prev, val.length));
-        if (ms < 1) {
+
+        console.log("matches:+"+ms);
+
+    	return {text:text, num_matches:ms}
+    }
+
+    var check_regex = function(e) {
+
+      var regex = document.getElementById("regex").value;
+      if(regex=="")
+      	return;
+      var matches = document.getElementsByClassName("positive_match");
+      var re = new RegExp(regex, 'g');
+
+
+      for (var i = 0; i < matches.length; i++) {
+
+       var val = matches[i].getElementsByClassName("match_text")[0].firstChild.nodeValue;
+       var result = find_match(re,val);
+        if (result.num_matches < 1) {
           matches[i].getElementsByClassName("result")[0].className = "result failed";
       } else {
 
         matches[i].getElementsByClassName("result")[0].className = "result success";
-        console.log(indices);
-        console.log(text);
-        console.log(matches[i].parentNode.lastChild.tagName);
-        matches[i].getElementsByClassName("matching_segments")[0].innerHTML = text;
+        //console.log(result.text);
+        matches[i].getElementsByClassName("matching_segments")[0].innerHTML = result.text;
       }
 
 
     }
 
     var matches = document.getElementsByClassName("negative_match")
-    var re = new RegExp(regex, 'g');
 
 
     for (var i = 0; i < matches.length; i++) {
-      ms = 0;
-      prev = 0;
-      text = "";
-      //matches[i].className = "negative_match";
-      var val = matches[i].getElementsByClassName("match_text")[0].firstChild.nodeValue;
-      do {
-        var m = re.exec(val);
-        if (m) {
-          console.log(m[0]);
-          ms++;
-          text += process_text(val.substring(prev, m.index)) + "<b>" + process_text(val.substring(m.index, m.index + m[0].length)) + "</b>";
-          console.log(text);
-          prev = m.index + m[0].length;
-        }
-      } while (m);
-      text += process_text(val.substring(prev, val.length));
-      if (ms > 0) {
+    	var val = matches[i].getElementsByClassName("match_text")[0].firstChild.nodeValue;
+       var result = find_match(re,val);
+
+      if (result.num_matches > 0) {
         matches[i].getElementsByClassName("result")[0].className = "result failed";
-        matches[i].getElementsByClassName("matching_segments")[0].innerHTML = text;
+        matches[i].getElementsByClassName("matching_segments")[0].innerHTML = result.text;
       } else {
 
         matches[i].getElementsByClassName("result")[0].className = "result success";
@@ -151,17 +180,17 @@ var _regexTester = (function(document) {
 
     }
   }
-  var flip = function(row) {
-    console.log(row);
-  }
+
 
   var add_match_internal = function(klass,type,opposite,match_text) {
 
   	var table = document.getElementById("match_table");
 
   	var fragment = create_row(' <td class = "ops" >' +
-      '<a href="#" onclick="this.parentNode.parentNode.parentNode.removeChild(this.parentNode.parentNode);">X</a> <a href="#" class="flip">Flip</a>' +
-      '<td class="type">' + type + '</td > <td class="result"> </td></td> <td class = "match_text" >' + match_text + '</td>' +
+      '<a href="#" onclick="this.parentNode.parentNode.parentNode.removeChild(this.parentNode.parentNode);">X</a>'+
+      ' <a href="#" class="flip">Flip</a>' +
+      '<td class="type">' + type + '</td > <td class="result"> </td>'+
+      '</td> <td class = "match_text" >' + match_text + '</td>' +
       '<td class="matching_segments"></td >', klass + "_match");
     var elem = table.appendChild(fragment);
 
@@ -175,6 +204,7 @@ var _regexTester = (function(document) {
         elem.className = "positive_match";
         elem.getElementsByClassName("type")[0].textContent = "Match";
       }
+     
        console.log("after:"+elem.className);
        check_regex();
     }, false);
@@ -370,8 +400,16 @@ var upload = function() {
   return {
     add_handlers: function() {
       
-      //var elem = document.getElementById("match");
-      //console.log("element:"+elem);
+      
+      document.getElementById("regex").addEventListener("keyup", function(e) {
+        console.log(e);
+        setTimeout(function(){check_regex(e)},500);
+      }, false);
+
+      document.getElementById("regex").addEventListener("onblur", function(e) {
+        console.log(e);
+        setTimeout(function(){check_regex(e)},500);
+      }, false);
       document.getElementById("submit_regex").addEventListener("click", function(e) {
         console.log(e);
         check_regex(e);
@@ -385,6 +423,11 @@ var upload = function() {
   document.getElementById("negative").addEventListener("click", function(e) {
         console.log("clicked");
         add_match("negative");
+      }, false);
+
+    document.getElementById("clear").addEventListener("click", function(e) {
+        console.log("clear");
+        clear_all();
       }, false);
 
    document.getElementById("btn").addEventListener("click", function(e) {
